@@ -1,7 +1,7 @@
 import { VBaseTransform } from "./VBaseTransform";
 import EnvSettings from "./EnvSettings";
-import VBaseNode from "./VBaseNode";
-import World from "./World";
+import {VBaseNode} from "./VBaseNode";
+import {World} from "./World";
 import {BaseSkill} from "./BaseSkill";
 
 export class WarriorDir
@@ -15,6 +15,7 @@ export class WarriorCommonState
     public static IDLE:number = 0;
     public static ACTIVE:number = 1;
     public static STUN:number = 2;
+    public static FIGHTING:number = 3;
 }
 
 export class WarriorFightingState
@@ -36,7 +37,15 @@ export class WarriorAnimState
     public static FALLING:number = 4;
     public static WALK:number = 5;
     public static RUN:number = 6;
-    public static CHANGE_DIR:number = 7;
+    public static BACKWARD:number = 7;
+    public static CHANGE_DIR:number = 8;
+    public static FIGHTING_IDLE:number = 9;
+
+    // chick
+    public static CROUCH:number = 20;
+    public static JUMP_HIGHT_FORWARD:number = 21;
+    public static JUMP_HIGHT_BACKWARD:number = 22;
+    public static ATTACK_MIDDLE_1:number = 23;
 }
 
 export class BaseWarrior extends VBaseNode
@@ -47,13 +56,15 @@ export class BaseWarrior extends VBaseNode
     public af:number;
     public name:string;
     public baseHeight:number;
-    protected stateTransitionDurMap;
     public vx:number;
     public vy:number;
     public attackRange:number;
     public minAttackRange:number;
     public dir:number;
     public hp:number;
+    public hitRadius:number;
+
+    protected stateTransitionDurMap;
 
     enemy: BaseWarrior;
     isOnGround:boolean;
@@ -73,18 +84,25 @@ export class BaseWarrior extends VBaseNode
         this.stateTransitionDurMap = {};
         this.vx = 0;
         this.vy = 0;
-        this.baseHeight = 50;
+        this.baseHeight = 60;
+        this.hitRadius = 50;
         this.moveSpeed = 300;
-        this.attackRange = 150;
+        this.attackRange = 300;
         this.minAttackRange = this.attackRange*0.9;
         this.isOnGround = false;
-        this.enemy = null;
         this.dir = 1;
         this.stunTime = 0;
         this.stunWait = 0;
         this.ga = EnvSettings.ga*1.0;
         this.af = EnvSettings.af*1.0;
+        this.reset();
+    }
+
+    public reset()
+    {
+        this.enemy = null;
         this.activeSkill = null;
+        this.state = WarriorCommonState.IDLE;
     }
 
     public setState(state:number)
@@ -92,17 +110,12 @@ export class BaseWarrior extends VBaseNode
         this.state = state;
     }
 
-    public checkBodyHit(enemy)
+    public getIsOnGround():boolean
     {
-
+        return this.isOnGround;
     }
 
-    public checkKickHit(enemy)
-    {
-        
-    }
-
-    public setAnimState(animState:number)
+    public setAnimState(animState:number, transDur:number = 0.1)
     {
 
     }
@@ -110,13 +123,21 @@ export class BaseWarrior extends VBaseNode
     public update(dt:number) 
     {
         super.update(dt);
-        this.vy += this.ga;
+        if (this.y > 0) this.vy += this.ga*dt;
         this.y += this.vy*dt;
-        if (this.y < this.baseHeight)
+        this.isOnGround = false;
+        if (this.y <= this.baseHeight)
         {
             this.y = this.baseHeight;
             this.isOnGround = true;
         }
+
+        if (!this.isOnGround)
+        {
+            this.x += this.vx*dt;
+            this.vx += this.af*dt;
+        }
+
         if (!this.enemy) this.findEnemy();
         let dis = Math.abs(this.x - this.enemy.x);
         switch(this.state)
@@ -131,16 +152,30 @@ export class BaseWarrior extends VBaseNode
                 }
                 break;
             case WarriorCommonState.ACTIVE:
+
+                if (!this.isOnGround) break;
                 if (dis > this.attackRange || dis < this.minAttackRange) {
                     if (this.checkValidAttackDir())
                     {
-                        this.x += this.dir*this.moveSpeed*dt;
-                        this.setAnimState(WarriorAnimState.RUN);
+                        if (dis > this.attackRange)
+                        {
+                            this.x += this.dir*this.moveSpeed*dt;
+                            this.setAnimState(WarriorAnimState.RUN);
+                        }
+                        else { // dis < this.minAttackRange
+                            this.x -= this.dir*this.moveSpeed*dt;
+                            this.setAnimState(WarriorAnimState.BACKWARD);
+                        }
+                        
                     }
                 }
                 else {
-                    this.updateFighting();
+                    this.state = WarriorCommonState.FIGHTING;
+                    this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
                 }
+                break;
+            default:
+                this.updateFighting(dt);
                 break;
     
         }
@@ -159,9 +194,13 @@ export class BaseWarrior extends VBaseNode
         this.activeSkill = null;
     }
 
-    protected updateFighting()
+    public hurt(damage:number)
     {
+        this.stopSkill();
+    }
 
+    protected updateFighting(dt)
+    {
     }
 
     protected setDir(dir:number)
@@ -175,6 +214,7 @@ export class BaseWarrior extends VBaseNode
             // play change dir animation --
         }
         this.dir = dir;
+        this.scaleX = dir;
     }
 
     public setStunFor(wait:number)
@@ -186,7 +226,7 @@ export class BaseWarrior extends VBaseNode
 
     protected checkValidAttackDir():boolean
     {
-        let moveDir = this.enemy.x - this.x >= 0?1:-1;
+        let moveDir = this.enemy.x - this.x >= 0? 1:-1;
         if (this.dir != moveDir) 
         {
             this.setDir(moveDir);

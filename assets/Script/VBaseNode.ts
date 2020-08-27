@@ -1,6 +1,6 @@
 import { VBaseTransform, VVec2, Mat3 } from "./VBaseTransform";
 
-export default class VBaseNode extends VBaseTransform
+export class VBaseNode extends VBaseTransform
 {
     children:Array<VBaseNode>;
     parent:VBaseNode;
