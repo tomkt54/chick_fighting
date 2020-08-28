@@ -8,6 +8,8 @@ export class World extends VBaseNode
 {
     public chick1:ChickFighter;
     public chick2:ChickFighter;
+    public resting:boolean;
+    public restInterval:number;
     constructor()
     {
         super();
@@ -18,6 +20,8 @@ export class World extends VBaseNode
         this.chick2.name = 'chick2';
         this.addChild(this.chick1);
         this.addChild(this.chick2);
+        this.restInterval = 0;
+        this.resting = false;
     }
 
     public reset()
@@ -44,6 +48,14 @@ export class World extends VBaseNode
     public update(dt:number)
     {
         super.update(dt);
+        if (this.restInterval > 0)
+        {
+            this.restInterval -= dt;
+        } 
+        else {
+            this.resting = !this.resting;
+            this.restInterval = this.getRand()*5.0;
+        }
         let c1 = this.chick1;
         let c2 = this.chick2;
         // check hit

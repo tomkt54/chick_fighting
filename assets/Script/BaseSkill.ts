@@ -12,12 +12,15 @@ export class BaseSkill extends VBaseNode
     hitProb:number;
     public attacked:boolean;
     public reserveTime:number;
+    public prepareTime:number;
+    public prepareDur:number;
 
     constructor()
     {
         super();
         this.damage = 10;
         this.hitProb = 1.0;
+        this.prepareDur = 0;
         this.reset();
     }
 
@@ -26,6 +29,7 @@ export class BaseSkill extends VBaseNode
         this.reserveTime = 0;
         this.isDone = true;
         this.active = false;
+        this.prepareTime = 0;
     }
 
     public setOwner(owner:ChickFighter)
@@ -82,7 +86,6 @@ export class KickSkill extends BaseSkill
         super();
         this.hitPos = new VVec2();
         this.lastIsOnGround = true;
-        this.reserveTime = 0.1; //s
     }
 
     public setOwner(owner:ChickFighter)
@@ -96,6 +99,8 @@ export class KickSkill extends BaseSkill
     {
         super.reset();
         this.lastIsOnGround = true;
+        this.prepareDur = 0.1;
+        this.reserveTime = 0.1; //s
     }
 
     public start()
@@ -103,8 +108,8 @@ export class KickSkill extends BaseSkill
         super.start();
         let owner = this.owner;
         let dis = Math.abs(this.owner.x - this.owner.enemy.x);
-        this.skillVx = dis*1.6;
-        this.skillVy = 600;
+        this.skillVx = dis*(1.2 + this.owner.world.getRand()*0.6);
+        this.skillVy = 500 + this.owner.world.getRand()*300;
         owner.vx = owner.dir*this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
@@ -133,6 +138,12 @@ export class KickSkill extends BaseSkill
     {
         super.update(dt);
         if (!this.active) return;
+
+        if (this.prepareTime < this.prepareDur)
+        {
+            this.prepareTime += dt;
+            return;
+        }
 
         let owner = this.owner;
         let enemy:ChickFighter = this.owner.enemy as any;
@@ -174,11 +185,18 @@ export class LowDodgeSkill extends BaseSkill
         super.reset();
         this.startX = 0;
         this.dodgeDis = 200;
+        this.prepareDur = 0.1;
     }
 
     public setOwner(owner:ChickFighter)
     {
         super.setOwner(owner);
+    }
+
+    public done()
+    {
+        super.done();
+        cc.log('LowDodgeSkill done');
     }
 
     public start()
@@ -200,6 +218,13 @@ export class LowDodgeSkill extends BaseSkill
     {
         super.update(dt);
         if (!this.active) return;
+
+        if (this.prepareTime < this.prepareDur)
+        {
+            this.prepareTime += dt;
+            return;
+        }
+
         this.owner.x += this.owner.dir*this.owner.moveSpeed*dt;
     }
 }

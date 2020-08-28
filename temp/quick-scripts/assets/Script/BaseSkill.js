@@ -25,6 +25,7 @@ var BaseSkill = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.damage = 10;
         _this.hitProb = 1.0;
+        _this.prepareDur = 0;
         _this.reset();
         return _this;
     }
@@ -32,6 +33,7 @@ var BaseSkill = /** @class */ (function (_super) {
         this.reserveTime = 0;
         this.isDone = true;
         this.active = false;
+        this.prepareTime = 0;
     };
     BaseSkill.prototype.setOwner = function (owner) {
         this.owner = owner;
@@ -74,7 +76,6 @@ var KickSkill = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.hitPos = new VBaseTransform_1.VVec2();
         _this.lastIsOnGround = true;
-        _this.reserveTime = 0.1; //s
         return _this;
     }
     KickSkill.prototype.setOwner = function (owner) {
@@ -85,13 +86,15 @@ var KickSkill = /** @class */ (function (_super) {
     KickSkill.prototype.reset = function () {
         _super.prototype.reset.call(this);
         this.lastIsOnGround = true;
+        this.prepareDur = 0.1;
+        this.reserveTime = 0.1; //s
     };
     KickSkill.prototype.start = function () {
         _super.prototype.start.call(this);
         var owner = this.owner;
         var dis = Math.abs(this.owner.x - this.owner.enemy.x);
-        this.skillVx = dis * 1.6;
-        this.skillVy = 600;
+        this.skillVx = dis * (1.2 + this.owner.world.getRand() * 0.6);
+        this.skillVy = 500 + this.owner.world.getRand() * 300;
         owner.vx = owner.dir * this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
@@ -113,6 +116,10 @@ var KickSkill = /** @class */ (function (_super) {
         _super.prototype.update.call(this, dt);
         if (!this.active)
             return;
+        if (this.prepareTime < this.prepareDur) {
+            this.prepareTime += dt;
+            return;
+        }
         var owner = this.owner;
         var enemy = this.owner.enemy;
         // check for skill exercution -------
@@ -144,9 +151,14 @@ var LowDodgeSkill = /** @class */ (function (_super) {
         _super.prototype.reset.call(this);
         this.startX = 0;
         this.dodgeDis = 200;
+        this.prepareDur = 0.1;
     };
     LowDodgeSkill.prototype.setOwner = function (owner) {
         _super.prototype.setOwner.call(this, owner);
+    };
+    LowDodgeSkill.prototype.done = function () {
+        _super.prototype.done.call(this);
+        cc.log('LowDodgeSkill done');
     };
     LowDodgeSkill.prototype.start = function () {
         _super.prototype.start.call(this);
@@ -162,6 +174,10 @@ var LowDodgeSkill = /** @class */ (function (_super) {
         _super.prototype.update.call(this, dt);
         if (!this.active)
             return;
+        if (this.prepareTime < this.prepareDur) {
+            this.prepareTime += dt;
+            return;
+        }
         this.owner.x += this.owner.dir * this.owner.moveSpeed * dt;
     };
     return LowDodgeSkill;

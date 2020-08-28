@@ -75,6 +75,7 @@ export class BaseWarrior extends VBaseNode
     stunTime:number;
     stunWait:number;
     public moveSpeed:number;
+    moveVal:number;
 
     protected activeSkill:BaseSkill;
 
@@ -106,6 +107,7 @@ export class BaseWarrior extends VBaseNode
         this.dir = 1;
         this.stunTime = 0;
         this.stunWait = 0;
+        this.moveVal = 0;
         this.reserveTime = 0;
         this.resetTransform();
         for (let i = 0; i < this.skills.length; i++) this.skills[i].reset();
@@ -151,8 +153,10 @@ export class BaseWarrior extends VBaseNode
         switch(this.state)
         {
             case WarriorCommonState.IDLE:
+                this.moveVal *= 0.9;
                 break;
             case WarriorCommonState.STUN:
+                this.moveVal *= 0.9;
                 if (this.stunTime < this.stunWait)
                 this.stunTime += dt;
                 else {
@@ -167,11 +171,16 @@ export class BaseWarrior extends VBaseNode
                     {
                         if (dis > this.attackRange)
                         {
-                            this.x += this.dir*this.moveSpeed*dt;
+                            this.moveVal += this.moveSpeed*0.05;
+                            if (this.moveVal > this.moveSpeed) this.moveVal = this.moveSpeed;
+                            this.x += this.dir*this.moveVal*dt;
                             this.setAnimState(WarriorAnimState.RUN);
+                            
                         }
                         else { // dis < this.minAttackRange
-                            this.x -= this.dir*this.moveSpeed*dt*0.8;
+                            this.moveVal += this.moveSpeed*0.03;
+                            if (this.moveVal > this.moveSpeed) this.moveVal = this.moveSpeed;
+                            this.x -= this.dir*this.moveVal*dt*0.8;
                             this.setAnimState(WarriorAnimState.BACKWARD);
                         } 
                     }
@@ -180,8 +189,8 @@ export class BaseWarrior extends VBaseNode
                     // if can not perform a skill, back to active state to check condition for valid skill attack again
                     if (this.reserveTime > 0) break;
                     if (!this.checkValidAttackDir()) break;
-                    
-                    if (this.chooseSkill())
+                    if (this.world.resting) break;
+                    if (this.chooseSkill(dt))
                     {
                         this.state = WarriorCommonState.FIGHTING;
                         this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
@@ -196,7 +205,7 @@ export class BaseWarrior extends VBaseNode
         
     }
 
-    protected chooseSkill():boolean
+    protected chooseSkill(dt):boolean
     {
         return false;
     }
