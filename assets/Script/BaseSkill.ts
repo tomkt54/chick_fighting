@@ -108,7 +108,7 @@ export class KickSkill extends BaseSkill
         super.start();
         let owner = this.owner;
         let dis = Math.abs(this.owner.x - this.owner.enemy.x);
-        this.skillVx = dis*(1.2 + this.owner.world.getRand()*0.6);
+        this.skillVx = dis*(1.2 + this.owner.world.getRand()*0.8);
         this.skillVy = 500 + this.owner.world.getRand()*300;
         owner.vx = owner.dir*this.skillVx;
         owner.vy = this.skillVy;
@@ -173,7 +173,7 @@ export class KickSkill extends BaseSkill
 export class LowDodgeSkill extends BaseSkill
 {
     startX:number;
-    dodgeDis:number;
+    public dodgeDis:number;
 
     constructor()
     {

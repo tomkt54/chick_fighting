@@ -93,7 +93,7 @@ var KickSkill = /** @class */ (function (_super) {
         _super.prototype.start.call(this);
         var owner = this.owner;
         var dis = Math.abs(this.owner.x - this.owner.enemy.x);
-        this.skillVx = dis * (1.2 + this.owner.world.getRand() * 0.6);
+        this.skillVx = dis * (1.2 + this.owner.world.getRand() * 0.8);
         this.skillVy = 500 + this.owner.world.getRand() * 300;
         owner.vx = owner.dir * this.skillVx;
         owner.vy = this.skillVy;

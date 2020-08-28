@@ -87,7 +87,7 @@ export class BaseWarrior extends VBaseNode
         
         this.baseHeight = 60;
         this.hitRadius = 50;
-        this.moveSpeed = 300;
+        this.moveSpeed = 400;
         this.attackRange = 300;
         this.minAttackRange = this.attackRange*0.6;
         
@@ -150,13 +150,12 @@ export class BaseWarrior extends VBaseNode
 
         if (!this.enemy) this.findEnemy();
         let dis = Math.abs(this.x - this.enemy.x);
+
         switch(this.state)
         {
             case WarriorCommonState.IDLE:
-                this.moveVal *= 0.9;
                 break;
             case WarriorCommonState.STUN:
-                this.moveVal *= 0.9;
                 if (this.stunTime < this.stunWait)
                 this.stunTime += dt;
                 else {
@@ -169,23 +168,29 @@ export class BaseWarrior extends VBaseNode
                 if (dis > this.attackRange || dis < this.minAttackRange) {
                     if (this.checkValidAttackDir())
                     {
+                        let val = Math.abs(this.moveVal);
                         if (dis > this.attackRange)
                         {
-                            this.moveVal += this.moveSpeed*0.05;
-                            if (this.moveVal > this.moveSpeed) this.moveVal = this.moveSpeed;
-                            this.x += this.dir*this.moveVal*dt;
+                            val += this.moveSpeed*0.05;
+                            if (val > this.moveSpeed) val = this.moveSpeed;
+                            this.moveVal = this.dir*val; // front
+                            this.x += this.moveVal*dt;
                             this.setAnimState(WarriorAnimState.RUN);
                             
                         }
                         else { // dis < this.minAttackRange
-                            this.moveVal += this.moveSpeed*0.03;
-                            if (this.moveVal > this.moveSpeed) this.moveVal = this.moveSpeed;
-                            this.x -= this.dir*this.moveVal*dt*0.8;
+                            val += this.moveSpeed*0.05;
+                            if (val > this.moveSpeed) val = this.moveSpeed;
+                            this.moveVal = -this.dir*val; // back
+                            this.x += this.moveVal*dt*0.8;
                             this.setAnimState(WarriorAnimState.BACKWARD);
                         } 
                     }
                 }
                 else {
+                    this.moveVal *= 0.8;
+                    this.x += this.moveVal*dt;
+
                     // if can not perform a skill, back to active state to check condition for valid skill attack again
                     if (this.reserveTime > 0) break;
                     if (!this.checkValidAttackDir()) break;
