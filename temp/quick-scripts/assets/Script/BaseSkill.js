@@ -135,38 +135,38 @@ var KickSkill = /** @class */ (function (_super) {
     return KickSkill;
 }(BaseSkill));
 exports.KickSkill = KickSkill;
-var DodgeSkill = /** @class */ (function (_super) {
-    __extends(DodgeSkill, _super);
-    function DodgeSkill() {
+var LowDodgeSkill = /** @class */ (function (_super) {
+    __extends(LowDodgeSkill, _super);
+    function LowDodgeSkill() {
         return _super.call(this) || this;
     }
-    DodgeSkill.prototype.reset = function () {
+    LowDodgeSkill.prototype.reset = function () {
         _super.prototype.reset.call(this);
         this.startX = 0;
         this.dodgeDis = 200;
     };
-    DodgeSkill.prototype.setOwner = function (owner) {
+    LowDodgeSkill.prototype.setOwner = function (owner) {
         _super.prototype.setOwner.call(this, owner);
     };
-    DodgeSkill.prototype.start = function () {
+    LowDodgeSkill.prototype.start = function () {
         _super.prototype.start.call(this);
         this.startX = this.owner.x;
     };
-    DodgeSkill.prototype.checkSkillDone = function () {
+    LowDodgeSkill.prototype.checkSkillDone = function () {
         if (Math.abs(this.owner.x - this.startX) > this.dodgeDis) {
             return true;
         }
         return false;
     };
-    DodgeSkill.prototype.update = function (dt) {
+    LowDodgeSkill.prototype.update = function (dt) {
         _super.prototype.update.call(this, dt);
         if (!this.active)
             return;
-        this.x += this.owner.dir * this.owner.moveSpeed * dt;
+        this.owner.x += this.owner.dir * this.owner.moveSpeed * dt;
     };
-    return DodgeSkill;
+    return LowDodgeSkill;
 }(BaseSkill));
-exports.DodgeSkill = DodgeSkill;
+exports.LowDodgeSkill = LowDodgeSkill;
 
 cc._RF.pop();
         }

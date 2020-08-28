@@ -171,19 +171,18 @@ export class BaseWarrior extends VBaseNode
                             this.setAnimState(WarriorAnimState.RUN);
                         }
                         else { // dis < this.minAttackRange
-                            this.x -= this.dir*this.moveSpeed*dt*0.5;
+                            this.x -= this.dir*this.moveSpeed*dt*0.8;
                             this.setAnimState(WarriorAnimState.BACKWARD);
-                        }
-                        
+                        } 
                     }
                 }
                 else {
                     // if can not perform a skill, back to active state to check condition for valid skill attack again
                     if (this.reserveTime > 0) break;
+                    if (!this.checkValidAttackDir()) break;
                     
-                    if (!this.activeSkill)
+                    if (this.chooseSkill())
                     {
-                        this.chooseSkill();
                         this.state = WarriorCommonState.FIGHTING;
                         this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
                     }
@@ -197,9 +196,9 @@ export class BaseWarrior extends VBaseNode
         
     }
 
-    protected chooseSkill()
+    protected chooseSkill():boolean
     {
-
+        return false;
     }
 
     public useSkill(ind:number)

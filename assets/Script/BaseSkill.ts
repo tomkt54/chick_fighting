@@ -159,7 +159,7 @@ export class KickSkill extends BaseSkill
     }
 }
 
-export class DodgeSkill extends BaseSkill
+export class LowDodgeSkill extends BaseSkill
 {
     startX:number;
     dodgeDis:number;
@@ -200,6 +200,6 @@ export class DodgeSkill extends BaseSkill
     {
         super.update(dt);
         if (!this.active) return;
-        this.x += this.owner.dir*this.owner.moveSpeed*dt;
+        this.owner.x += this.owner.dir*this.owner.moveSpeed*dt;
     }
 }
