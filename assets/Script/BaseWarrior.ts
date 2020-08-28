@@ -74,7 +74,7 @@ export class BaseWarrior extends VBaseNode
     
     stunTime:number;
     stunWait:number;
-    moveSpeed:number;
+    public moveSpeed:number;
 
     protected activeSkill:BaseSkill;
 

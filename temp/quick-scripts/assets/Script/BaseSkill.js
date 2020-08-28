@@ -30,8 +30,8 @@ var BaseSkill = /** @class */ (function (_super) {
     }
     BaseSkill.prototype.reset = function () {
         this.reserveTime = 0;
-        this.isDone = false;
-        this.active = true;
+        this.isDone = true;
+        this.active = false;
     };
     BaseSkill.prototype.setOwner = function (owner) {
         this.owner = owner;
@@ -39,6 +39,8 @@ var BaseSkill = /** @class */ (function (_super) {
     };
     BaseSkill.prototype.start = function () {
         this.reset();
+        this.isDone = false;
+        this.active = true;
     };
     BaseSkill.prototype.done = function (stunDur) {
         if (stunDur === void 0) { stunDur = 0.; }
@@ -55,6 +57,10 @@ var BaseSkill = /** @class */ (function (_super) {
         return false;
     };
     BaseSkill.prototype.update = function (dt) {
+        // incase the skill not yet exercuted, how it will be done? --
+        if (this.checkSkillDone())
+            this.done();
+        // -----------------------------------------
     };
     BaseSkill.prototype.deactive = function () {
         this.active = false;
@@ -75,6 +81,10 @@ var KickSkill = /** @class */ (function (_super) {
         _super.prototype.setOwner.call(this, owner);
         this.hitPos.x = owner.hitRadius * 1.6;
         this.hitPos.y = -owner.hitRadius * 0.2;
+    };
+    KickSkill.prototype.reset = function () {
+        _super.prototype.reset.call(this);
+        this.lastIsOnGround = true;
     };
     KickSkill.prototype.start = function () {
         _super.prototype.start.call(this);
@@ -101,10 +111,6 @@ var KickSkill = /** @class */ (function (_super) {
     };
     KickSkill.prototype.update = function (dt) {
         _super.prototype.update.call(this, dt);
-        // incase the skill not yet exercuted, how it will be done? --
-        if (this.checkSkillDone())
-            this.done();
-        // -----------------------------------------
         if (!this.active)
             return;
         var owner = this.owner;
@@ -129,6 +135,38 @@ var KickSkill = /** @class */ (function (_super) {
     return KickSkill;
 }(BaseSkill));
 exports.KickSkill = KickSkill;
+var DodgeSkill = /** @class */ (function (_super) {
+    __extends(DodgeSkill, _super);
+    function DodgeSkill() {
+        return _super.call(this) || this;
+    }
+    DodgeSkill.prototype.reset = function () {
+        _super.prototype.reset.call(this);
+        this.startX = 0;
+        this.dodgeDis = 200;
+    };
+    DodgeSkill.prototype.setOwner = function (owner) {
+        _super.prototype.setOwner.call(this, owner);
+    };
+    DodgeSkill.prototype.start = function () {
+        _super.prototype.start.call(this);
+        this.startX = this.owner.x;
+    };
+    DodgeSkill.prototype.checkSkillDone = function () {
+        if (Math.abs(this.owner.x - this.startX) > this.dodgeDis) {
+            return true;
+        }
+        return false;
+    };
+    DodgeSkill.prototype.update = function (dt) {
+        _super.prototype.update.call(this, dt);
+        if (!this.active)
+            return;
+        this.x += this.owner.dir * this.owner.moveSpeed * dt;
+    };
+    return DodgeSkill;
+}(BaseSkill));
+exports.DodgeSkill = DodgeSkill;
 
 cc._RF.pop();
         }

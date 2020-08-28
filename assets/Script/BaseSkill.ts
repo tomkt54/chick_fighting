@@ -24,8 +24,8 @@ export class BaseSkill extends VBaseNode
     public reset()
     {
         this.reserveTime = 0;
-        this.isDone = false;
-        this.active = true;
+        this.isDone = true;
+        this.active = false;
     }
 
     public setOwner(owner:ChickFighter)
@@ -37,6 +37,8 @@ export class BaseSkill extends VBaseNode
     public start()
     {
         this.reset();
+        this.isDone = false;
+        this.active = true;
     }
 
     public done(stunDur = 0.)
@@ -57,6 +59,9 @@ export class BaseSkill extends VBaseNode
 
     public update(dt:number)
     {
+        // incase the skill not yet exercuted, how it will be done? --
+        if (this.checkSkillDone()) this.done();
+        // -----------------------------------------
     }
 
     public deactive()
@@ -85,6 +90,12 @@ export class KickSkill extends BaseSkill
         super.setOwner(owner);
         this.hitPos.x = owner.hitRadius*1.6;
         this.hitPos.y = -owner.hitRadius*0.2;
+    }
+
+    public reset()
+    {
+        super.reset();
+        this.lastIsOnGround = true;
     }
 
     public start()
@@ -121,11 +132,6 @@ export class KickSkill extends BaseSkill
     public update(dt:number)
     {
         super.update(dt);
-
-        // incase the skill not yet exercuted, how it will be done? --
-        if (this.checkSkillDone()) this.done();
-        // -----------------------------------------
-
         if (!this.active) return;
 
         let owner = this.owner;
@@ -155,13 +161,45 @@ export class KickSkill extends BaseSkill
 
 export class DodgeSkill extends BaseSkill
 {
+    startX:number;
+    dodgeDis:number;
+
     constructor()
     {
         super();
     }
 
+    public reset()
+    {
+        super.reset();
+        this.startX = 0;
+        this.dodgeDis = 200;
+    }
+
     public setOwner(owner:ChickFighter)
     {
         super.setOwner(owner);
+    }
+
+    public start()
+    {
+        super.start();
+        this.startX = this.owner.x;
+    }
+
+    public checkSkillDone():boolean
+    {
+        if (Math.abs(this.owner.x - this.startX) > this.dodgeDis)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    public update(dt:number)
+    {
+        super.update(dt);
+        if (!this.active) return;
+        this.x += this.owner.dir*this.owner.moveSpeed*dt;
     }
 }
