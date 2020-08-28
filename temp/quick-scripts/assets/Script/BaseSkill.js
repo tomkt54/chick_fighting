@@ -25,26 +25,39 @@ var BaseSkill = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.damage = 10;
         _this.hitProb = 1.0;
+        _this.reset();
         return _this;
     }
-    BaseSkill.prototype.setOwner = function (owner) {
-        this.owner = owner;
-    };
-    BaseSkill.prototype.start = function () {
+    BaseSkill.prototype.reset = function () {
+        this.reserveTime = 0;
+        this.isDone = false;
         this.active = true;
     };
-    BaseSkill.prototype.stop = function () {
-        this.active = false;
+    BaseSkill.prototype.setOwner = function (owner) {
+        this.owner = owner;
+        this.reset();
+    };
+    BaseSkill.prototype.start = function () {
+        this.reset();
     };
     BaseSkill.prototype.done = function (stunDur) {
-        if (stunDur === void 0) { stunDur = 0; }
-        this.owner.stopSkill();
+        if (stunDur === void 0) { stunDur = 0.; }
+        if (this.isDone)
+            return;
+        //cc.log('done ' + this.owner.name);
+        this.owner.onSkillDone();
+        // make sure owner back to stune state
         this.owner.setStunFor(stunDur);
+        this.owner.reserveTime = this.reserveTime;
+        this.isDone = true;
     };
     BaseSkill.prototype.checkSkillDone = function () {
         return false;
     };
     BaseSkill.prototype.update = function (dt) {
+    };
+    BaseSkill.prototype.deactive = function () {
+        this.active = false;
     };
     return BaseSkill;
 }(VBaseNode_1.VBaseNode));
@@ -55,7 +68,7 @@ var KickSkill = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.hitPos = new VBaseTransform_1.VVec2();
         _this.lastIsOnGround = true;
-        _this.skillVy = 600;
+        _this.reserveTime = 0.1; //s
         return _this;
     }
     KickSkill.prototype.setOwner = function (owner) {
@@ -68,6 +81,7 @@ var KickSkill = /** @class */ (function (_super) {
         var owner = this.owner;
         var dis = Math.abs(this.owner.x - this.owner.enemy.x);
         this.skillVx = dis * 1.6;
+        this.skillVy = 600;
         owner.vx = owner.dir * this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
@@ -79,7 +93,7 @@ var KickSkill = /** @class */ (function (_super) {
     };
     KickSkill.prototype.checkSkillDone = function () {
         if (!this.lastIsOnGround && this.owner.getIsOnGround()) {
-            cc.log('kick skill end');
+            //cc.log('kick skill end ' + this.owner.name);
             return true;
         }
         this.lastIsOnGround = this.owner.getIsOnGround();
@@ -89,7 +103,7 @@ var KickSkill = /** @class */ (function (_super) {
         _super.prototype.update.call(this, dt);
         // incase the skill not yet exercuted, how it will be done? --
         if (this.checkSkillDone())
-            this.done(0.2);
+            this.done();
         // -----------------------------------------
         if (!this.active)
             return;
@@ -102,11 +116,11 @@ var KickSkill = /** @class */ (function (_super) {
             var v = new VBaseTransform_1.VVec2(p.x - enemy.x, p.y - enemy.y);
             var dis = Math.sqrt(v.x * v.x + v.y * v.y);
             if (dis < enemy.hitRadius) {
-                cc.log('kick skill exercuted ---');
-                enemy.vy -= 50;
+                //cc.log('kick skill exercuted ---'  + this.owner.name);
+                enemy.vy -= 30;
                 // wait for landing
-                enemy.hurt(this.damage, 0.5);
-                this.done(0.7);
+                enemy.hurt(this.damage, 1.0);
+                this.deactive();
                 return;
             }
         }

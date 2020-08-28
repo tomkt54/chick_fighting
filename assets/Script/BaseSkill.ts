@@ -6,37 +6,48 @@ import { VVec2 } from "./VBaseTransform";
 export class BaseSkill extends VBaseNode
 {
     public active:boolean;
+    public isDone:boolean;
     public owner:ChickFighter;
     public damage:number;
     hitProb:number;
     public attacked:boolean;
+    public reserveTime:number;
 
     constructor()
     {
         super();
         this.damage = 10;
         this.hitProb = 1.0;
+        this.reset();
+    }
+
+    public reset()
+    {
+        this.reserveTime = 0;
+        this.isDone = false;
+        this.active = true;
     }
 
     public setOwner(owner:ChickFighter)
     {
         this.owner = owner;
+        this.reset();
     }
 
     public start()
     {
-        this.active = true;
+        this.reset();
     }
 
-    public stop()
+    public done(stunDur = 0.)
     {
-        this.active = false;
-    }
-
-    public done(stunDur = 0)
-    {
-        this.owner.stopSkill();
+        if (this.isDone) return;
+        //cc.log('done ' + this.owner.name);
+        this.owner.onSkillDone();
+        // make sure owner back to stune state
         this.owner.setStunFor(stunDur);
+        this.owner.reserveTime = this.reserveTime;
+        this.isDone = true;
     }
 
     public checkSkillDone():boolean
@@ -46,6 +57,11 @@ export class BaseSkill extends VBaseNode
 
     public update(dt:number)
     {
+    }
+
+    public deactive()
+    {
+        this.active = false;
     }
 }
 
@@ -61,7 +77,7 @@ export class KickSkill extends BaseSkill
         super();
         this.hitPos = new VVec2();
         this.lastIsOnGround = true;
-        this.skillVy = 600;
+        this.reserveTime = 0.1; //s
     }
 
     public setOwner(owner:ChickFighter)
@@ -77,7 +93,7 @@ export class KickSkill extends BaseSkill
         let owner = this.owner;
         let dis = Math.abs(this.owner.x - this.owner.enemy.x);
         this.skillVx = dis*1.6;
-        
+        this.skillVy = 600;
         owner.vx = owner.dir*this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
@@ -95,7 +111,7 @@ export class KickSkill extends BaseSkill
     {
         if (!this.lastIsOnGround && this.owner.getIsOnGround())
         {
-            cc.log('kick skill end');
+            //cc.log('kick skill end ' + this.owner.name);
             return true;
         }
         this.lastIsOnGround = this.owner.getIsOnGround();
@@ -107,14 +123,13 @@ export class KickSkill extends BaseSkill
         super.update(dt);
 
         // incase the skill not yet exercuted, how it will be done? --
-        if (this.checkSkillDone()) this.done(0.2);
+        if (this.checkSkillDone()) this.done();
         // -----------------------------------------
 
         if (!this.active) return;
 
         let owner = this.owner;
         let enemy:ChickFighter = this.owner.enemy as any;
-        
 
         // check for skill exercution -------
         if (this.skillVy > 0 && this.owner.vy > 0 && this.owner.vy < this.skillVy*0.9)
@@ -125,15 +140,28 @@ export class KickSkill extends BaseSkill
             let dis = Math.sqrt(v.x*v.x + v.y*v.y);
             if (dis < enemy.hitRadius)
             {
-                cc.log('kick skill exercuted ---');
-                enemy.vy -= 50;
+                //cc.log('kick skill exercuted ---'  + this.owner.name);
+                enemy.vy -= 30;
                 // wait for landing
-                enemy.hurt(this.damage, 0.5);
-                this.done(0.7); 
-                return;        
+                enemy.hurt(this.damage, 1.0);
+                this.deactive(); 
+                return;
             }
         }
         // ---------------------
 
+    }
+}
+
+export class DodgeSkill extends BaseSkill
+{
+    constructor()
+    {
+        super();
+    }
+
+    public setOwner(owner:ChickFighter)
+    {
+        super.setOwner(owner);
     }
 }

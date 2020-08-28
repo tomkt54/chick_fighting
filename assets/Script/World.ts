@@ -18,22 +18,27 @@ export class World extends VBaseNode
         this.chick2.name = 'chick2';
         this.addChild(this.chick1);
         this.addChild(this.chick2);
-        this.chick2.dir = -1;
-        this.chick2.scaleX = -1;
     }
 
     public reset()
     {
-        this.chick1.x = EnvSettings.SCREEN_W*0.2;
-        this.chick2.x = EnvSettings.SCREEN_W - this.chick1.x;
         this.chick1.reset();
         this.chick2.reset();
+        this.chick1.x = EnvSettings.SCREEN_W*0.2;
+        this.chick2.x = EnvSettings.SCREEN_W - this.chick1.x;
+        this.chick2.dir = -1;
+        this.chick2.scaleX = -1;
     }
 
     public startFighting()
     {
         this.chick1.setState(WarriorCommonState.ACTIVE);
         this.chick2.setState(WarriorCommonState.ACTIVE);
+    }
+
+    public getRand():number
+    {
+        return Math.random();
     }
 
     public update(dt:number)

@@ -167,6 +167,11 @@ export class VBaseTransform
 
     constructor()
     {
+        this.resetTransform();
+    }
+
+    public resetTransform()
+    {
         this.scaleX = 1;
         this.scaleY = 1;
         this.skewY = 0;

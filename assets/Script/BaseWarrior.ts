@@ -63,6 +63,7 @@ export class BaseWarrior extends VBaseNode
     public dir:number;
     public hp:number;
     public hitRadius:number;
+    public reserveTime;
 
     protected stateTransitionDurMap;
 
@@ -77,22 +78,18 @@ export class BaseWarrior extends VBaseNode
 
     protected activeSkill:BaseSkill;
 
-    constructor (world:World) {
+    constructor(world:World) {
         super();
         this.skills = [];
         this.world = world;
         this.stateTransitionDurMap = {};
-        this.vx = 0;
-        this.vy = 0;
+        
         this.baseHeight = 60;
         this.hitRadius = 50;
         this.moveSpeed = 300;
         this.attackRange = 300;
-        this.minAttackRange = this.attackRange*0.9;
-        this.isOnGround = false;
-        this.dir = 1;
-        this.stunTime = 0;
-        this.stunWait = 0;
+        this.minAttackRange = this.attackRange*0.6;
+        
         this.ga = EnvSettings.ga*1.0;
         this.af = EnvSettings.af*1.0;
         this.reset();
@@ -100,9 +97,18 @@ export class BaseWarrior extends VBaseNode
 
     public reset()
     {
+        this.vx = 0;
+        this.vy = 0;
         this.enemy = null;
         this.activeSkill = null;
         this.state = WarriorCommonState.IDLE;
+        this.isOnGround = false;
+        this.dir = 1;
+        this.stunTime = 0;
+        this.stunWait = 0;
+        this.reserveTime = 0;
+        this.resetTransform();
+        for (let i = 0; i < this.skills.length; i++) this.skills[i].reset();
     }
 
     public setState(state:number)
@@ -126,6 +132,8 @@ export class BaseWarrior extends VBaseNode
         if (this.y > 0) this.vy += this.ga*dt;
         this.y += this.vy*dt;
         this.isOnGround = false;
+
+        if (this.reserveTime > 0) this.reserveTime -= dt;
         if (this.y <= this.baseHeight)
         {
             this.y = this.baseHeight;
@@ -163,15 +171,22 @@ export class BaseWarrior extends VBaseNode
                             this.setAnimState(WarriorAnimState.RUN);
                         }
                         else { // dis < this.minAttackRange
-                            this.x -= this.dir*this.moveSpeed*dt;
+                            this.x -= this.dir*this.moveSpeed*dt*0.5;
                             this.setAnimState(WarriorAnimState.BACKWARD);
                         }
                         
                     }
                 }
                 else {
-                    this.state = WarriorCommonState.FIGHTING;
-                    this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
+                    // if can not perform a skill, back to active state to check condition for valid skill attack again
+                    if (this.reserveTime > 0) break;
+                    
+                    if (!this.activeSkill)
+                    {
+                        this.chooseSkill();
+                        this.state = WarriorCommonState.FIGHTING;
+                        this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
+                    }
                 }
                 break;
             default:
@@ -182,6 +197,11 @@ export class BaseWarrior extends VBaseNode
         
     }
 
+    protected chooseSkill()
+    {
+
+    }
+
     public useSkill(ind:number)
     {
         this.activeSkill = this.skills[ind];
@@ -190,13 +210,23 @@ export class BaseWarrior extends VBaseNode
 
     public stopSkill()
     {
-        if (this.activeSkill) this.activeSkill.stop();
+        if (this.activeSkill) 
+        {
+            this.activeSkill.done();
+            this.activeSkill = null;
+        }
+    }
+
+    public onSkillDone()
+    {
         this.activeSkill = null;
     }
 
-    public hurt(damage:number)
+    public hurt(damage:number, stunDur = 0.2)
     {
+        cc.log('hurt == ' + this.name);
         this.stopSkill();
+        this.setStunFor(stunDur);
     }
 
     protected updateFighting(dt)
