@@ -152,17 +152,21 @@ var LowDodgeSkill = /** @class */ (function (_super) {
         this.startX = 0;
         this.dodgeDis = 200;
         this.prepareDur = 0.1;
+        this.moveVal = 0;
     };
     LowDodgeSkill.prototype.setOwner = function (owner) {
         _super.prototype.setOwner.call(this, owner);
     };
     LowDodgeSkill.prototype.done = function () {
         _super.prototype.done.call(this);
+        // for scale down moving speed
+        this.owner.moveVal = this.moveVal;
         cc.log('LowDodgeSkill done');
     };
     LowDodgeSkill.prototype.start = function () {
         _super.prototype.start.call(this);
         this.startX = this.owner.x;
+        this.prepareDur = this.owner.world.getRand() * 0.2;
     };
     LowDodgeSkill.prototype.checkSkillDone = function () {
         if (Math.abs(this.owner.x - this.startX) > this.dodgeDis) {
@@ -178,7 +182,12 @@ var LowDodgeSkill = /** @class */ (function (_super) {
             this.prepareTime += dt;
             return;
         }
-        this.owner.x += this.owner.dir * this.owner.moveSpeed * dt;
+        var val = Math.abs(this.moveVal);
+        val += this.owner.moveSpeed * 0.05;
+        if (val > this.owner.moveSpeed)
+            val = this.owner.moveSpeed;
+        this.moveVal = this.owner.dir * val; // front
+        this.owner.x += this.moveVal * dt * 1.2;
     };
     return LowDodgeSkill;
 }(BaseSkill));

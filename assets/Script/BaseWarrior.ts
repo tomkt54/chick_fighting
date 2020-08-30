@@ -154,6 +154,8 @@ export class BaseWarrior extends VBaseNode
         switch(this.state)
         {
             case WarriorCommonState.IDLE:
+                this.moveVal *= 0.8;
+                this.x += this.moveVal*dt;
                 break;
             case WarriorCommonState.STUN:
                 if (this.stunTime < this.stunWait)
@@ -161,6 +163,8 @@ export class BaseWarrior extends VBaseNode
                 else {
                     this.state = WarriorCommonState.ACTIVE;
                 }
+                this.moveVal *= 0.8;
+                this.x += this.moveVal*dt;
                 break;
             case WarriorCommonState.ACTIVE:
 

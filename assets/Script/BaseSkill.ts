@@ -174,6 +174,7 @@ export class LowDodgeSkill extends BaseSkill
 {
     startX:number;
     public dodgeDis:number;
+    public moveVal:number;
 
     constructor()
     {
@@ -186,6 +187,7 @@ export class LowDodgeSkill extends BaseSkill
         this.startX = 0;
         this.dodgeDis = 200;
         this.prepareDur = 0.1;
+        this.moveVal = 0;
     }
 
     public setOwner(owner:ChickFighter)
@@ -196,6 +198,8 @@ export class LowDodgeSkill extends BaseSkill
     public done()
     {
         super.done();
+        // for scale down moving speed
+        this.owner.moveVal = this.moveVal;
         cc.log('LowDodgeSkill done');
     }
 
@@ -203,6 +207,7 @@ export class LowDodgeSkill extends BaseSkill
     {
         super.start();
         this.startX = this.owner.x;
+        this.prepareDur = this.owner.world.getRand()*0.2;
     }
 
     public checkSkillDone():boolean
@@ -225,6 +230,10 @@ export class LowDodgeSkill extends BaseSkill
             return;
         }
 
-        this.owner.x += this.owner.dir*this.owner.moveSpeed*dt;
+        let val = Math.abs(this.moveVal);
+        val += this.owner.moveSpeed*0.05;
+        if (val > this.owner.moveSpeed) val = this.owner.moveSpeed;
+        this.moveVal = this.owner.dir*val; // front
+        this.owner.x += this.moveVal*dt*1.2;
     }
 }
