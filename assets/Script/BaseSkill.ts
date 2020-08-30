@@ -86,6 +86,7 @@ export class KickSkill extends BaseSkill
         super();
         this.hitPos = new VVec2();
         this.lastIsOnGround = true;
+        this.damage = 25;
     }
 
     public setOwner(owner:ChickFighter)
@@ -160,7 +161,8 @@ export class KickSkill extends BaseSkill
                 //cc.log('kick skill exercuted ---'  + this.owner.name);
                 enemy.vy -= 30;
                 // wait for landing
-                enemy.hurt(this.damage, 1.0);
+                let critical = this.owner.world.getRand()*this.damage*0.3;
+                enemy.hurt(this.damage + critical, 1.0);
                 this.deactive(); 
                 return;
             }

@@ -1,6 +1,7 @@
 import {World} from "./World";
 import { VVec2 } from "./VBaseTransform";
 import { KickSkill } from "./BaseSkill";
+import { BaseWarrior } from "./BaseWarrior";
 
 const {ccclass, property} = cc._decorator;
 
@@ -18,11 +19,20 @@ export default class ChickGame extends cc.Component {
     @property(cc.Node)
     hit2: cc.Node = null;
 
+    @property(cc.ProgressBar)
+    hpBar1: cc.ProgressBar = null;
+
+    @property(cc.ProgressBar)
+    hpBar2: cc.ProgressBar = null;
+
     world:World;
 
     onLoad () {
         this.world = new World();
         this.world.reset();
+
+        // register ui hdl
+        this.world.updateUIHpHdl = this.updateUIHpHdl.bind(this);
     }
 
     start () {
@@ -58,5 +68,12 @@ export default class ChickGame extends cc.Component {
 
         this.hit2.x = p2.x;
         this.hit2.y = p2.y;
+    }
+
+    public updateUIHpHdl(chick:BaseWarrior)
+    {
+        let hpBar:cc.ProgressBar = chick == this.world.chick1?this.hpBar1:this.hpBar2;
+
+        hpBar.progress = chick.getHp()/chick.totalHp;
     }
 }

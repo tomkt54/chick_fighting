@@ -76,6 +76,7 @@ export class BaseWarrior extends VBaseNode
     stunWait:number;
     public moveSpeed:number;
     moveVal:number;
+    public totalHp:number;
 
     protected activeSkill:BaseSkill;
 
@@ -93,6 +94,7 @@ export class BaseWarrior extends VBaseNode
         
         this.ga = EnvSettings.ga*1.0;
         this.af = EnvSettings.af*1.0;
+        this.totalHp = 100;
         this.reset();
     }
 
@@ -111,6 +113,13 @@ export class BaseWarrior extends VBaseNode
         this.reserveTime = 0;
         this.resetTransform();
         for (let i = 0; i < this.skills.length; i++) this.skills[i].reset();
+
+        this.hp = this.totalHp;
+    }
+
+    public getHp()
+    {
+        return this.hp;
     }
 
     public setState(state:number)
@@ -209,7 +218,6 @@ export class BaseWarrior extends VBaseNode
             default:
                 this.updateFighting(dt);
                 break;
-    
         }
         
     }
@@ -244,6 +252,28 @@ export class BaseWarrior extends VBaseNode
         cc.log('hurt == ' + this.name);
         this.stopSkill();
         this.setStunFor(stunDur);
+        this.setHp(this.hp - damage);
+        
+        if (this.hp <= 0) this.die();
+    }
+
+    public setHp(hp)
+    {
+        if (hp < 0) hp = 0;
+        if (hp > this.totalHp) hp = this.totalHp;
+        this.hp = hp;
+        this.world.onWarriorHpChange(this);
+    }
+
+    public die()
+    {
+        this.world.onWarriorDie(this);
+        this.setState(WarriorCommonState.IDLE);
+    }
+
+    public win()
+    {
+        this.setState(WarriorCommonState.IDLE);
     }
 
     protected updateFighting(dt)

@@ -76,6 +76,7 @@ var KickSkill = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.hitPos = new VBaseTransform_1.VVec2();
         _this.lastIsOnGround = true;
+        _this.damage = 25;
         return _this;
     }
     KickSkill.prototype.setOwner = function (owner) {
@@ -132,7 +133,8 @@ var KickSkill = /** @class */ (function (_super) {
                 //cc.log('kick skill exercuted ---'  + this.owner.name);
                 enemy.vy -= 30;
                 // wait for landing
-                enemy.hurt(this.damage, 1.0);
+                var critical = this.owner.world.getRand() * this.damage * 0.3;
+                enemy.hurt(this.damage + critical, 1.0);
                 this.deactive();
                 return;
             }

@@ -9,7 +9,14 @@ export class World extends VBaseNode
     public chick1:ChickFighter;
     public chick2:ChickFighter;
     public resting:boolean;
+
+    // can adjust restInterval to modify the battle duration
     public restInterval:number;
+
+    // ui handler --
+    public updateUIHpHdl:any;
+    // -----
+
     constructor()
     {
         super();
@@ -22,6 +29,7 @@ export class World extends VBaseNode
         this.addChild(this.chick2);
         this.restInterval = 0;
         this.resting = false;
+        this.updateUIHpHdl = null;
     }
 
     public reset()
@@ -71,6 +79,19 @@ export class World extends VBaseNode
                 } 
             }
         }
+    }
+
+    public onWarriorDie(chick:BaseWarrior)
+    {
+        let winer = this.chick1 != chick ? this.chick1:this.chick2;
+        let loser = this.chick1 == chick ? this.chick1:this.chick2;
+
+        winer.win();
+    }
+
+    public onWarriorHpChange(chick:BaseWarrior)
+    {
+        if (this.updateUIHpHdl) this.updateUIHpHdl(chick);
     }
 
 }
