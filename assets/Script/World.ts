@@ -17,6 +17,8 @@ export class World extends VBaseNode
     public updateUIHpHdl:any;
     // -----
 
+    public baseTimeScale = 1.0;
+
     constructor()
     {
         super();
@@ -57,6 +59,7 @@ export class World extends VBaseNode
 
     public update(dt:number)
     {
+        dt *= this.baseTimeScale;
         super.update(dt);
         if (this.restInterval > 0)
         {

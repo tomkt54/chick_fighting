@@ -41,10 +41,26 @@ export default class ChickGame extends cc.Component {
         this.world.chick1.setAnim(this.anim1);
         this.world.chick2.setAnim(this.anim2);
         this.world.reset();
+
+        let _deltaTime: number = 0;
+        let timeScaleAttibute = cc.js.getPropertyDescriptor(cc.director, "_deltaTime");
+
+        Object.defineProperty(cc.director, "_deltaTime", {
+            get: () => {
+                let r = _deltaTime * cc.director.getScheduler().getTimeScale();
+                    return r; 
+                },
+                set: (value) => { 
+                    _deltaTime = value;
+                },
+                enumerable: true,
+                configurable: true
+        });
+
+        cc.director.getScheduler().setTimeScale(this.world.baseTimeScale);
     }
 
     start () {
-
     }
 
     onStartFighting()

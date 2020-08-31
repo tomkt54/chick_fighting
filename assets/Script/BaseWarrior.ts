@@ -79,12 +79,11 @@ export class BaseWarrior extends VBaseNode
     public totalHp:number;
 
     protected activeSkill:BaseSkill;
-    protected anim:any;
+    public anim:any;
     public animStateMap:any;
     public animLoopMap:any;
     public transDurMap:any;
     protected curAnimState:number;
-    protected nextAnimState:number;
     protected mixAnimTime:number;
 
     constructor(world:World) {
@@ -97,8 +96,8 @@ export class BaseWarrior extends VBaseNode
         this.mixAnimTime = 0;
         this.baseHeight = 60;
         this.hitRadius = 40;
-        this.moveSpeed = 400;
-        this.attackRange = 350;
+        this.moveSpeed = 600;
+        this.attackRange = 300;
         this.minAttackRange = this.attackRange*0.6;
         
         this.ga = EnvSettings.ga*1.0;
@@ -108,7 +107,6 @@ export class BaseWarrior extends VBaseNode
         this.animStateMap = {};
         this.animLoopMap = {};
         this.curAnimState = -1;
-        this.nextAnimState = -1;
         this.anim = null;
         this.reset();
     }
@@ -137,6 +135,11 @@ export class BaseWarrior extends VBaseNode
         this.anim = anim;
     }
 
+    public getMoveVal():number
+    {
+        return this.moveVal;
+    }
+
     public getHp()
     {
         return this.hp;
@@ -154,6 +157,7 @@ export class BaseWarrior extends VBaseNode
 
     public setAnimState(animState:number)
     {
+        if (this.curAnimState == animState) return;
         this.mixAnim(animState);
     }
 
@@ -207,6 +211,7 @@ export class BaseWarrior extends VBaseNode
             case WarriorCommonState.ACTIVE:
 
                 if (!this.isOnGround) break;
+                if (this.moveVal == 0) this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
                 if (dis > this.attackRange || dis < this.minAttackRange) {
                     if (this.checkValidAttackDir())
                     {
@@ -218,7 +223,6 @@ export class BaseWarrior extends VBaseNode
                             this.moveVal = this.dir*val; // front
                             this.x += this.moveVal*dt;
                             this.setAnimState(WarriorAnimState.RUN);
-                            
                         }
                         else { // dis < this.minAttackRange
                             val += this.moveSpeed*0.05;
@@ -231,6 +235,7 @@ export class BaseWarrior extends VBaseNode
                 }
                 else {
                     this.moveVal *= 0.8;
+                    if (Math.abs(this.moveVal) < 1) this.moveVal = 0;
                     this.x += this.moveVal*dt;
 
                     // if can not perform a skill, back to active state to check condition for valid skill attack again
@@ -239,7 +244,10 @@ export class BaseWarrior extends VBaseNode
                     if (this.world.resting) break;
                     if (this.chooseSkill(dt))
                     {
+                        this.moveVal = 0;
                         this.state = WarriorCommonState.FIGHTING;
+                    }
+                    else {
                         this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
                     }
                 }

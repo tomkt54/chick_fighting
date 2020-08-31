@@ -1,4 +1,4 @@
-import {BaseWarrior} from "./BaseWarrior";
+import {WarriorAnimState, BaseWarrior, WarriorFightingState} from "./BaseWarrior";
 import {VBaseNode} from "./VBaseNode";
 import {ChickFighter} from "./ChickFighter";
 import { VVec2 } from "./VBaseTransform";
@@ -10,6 +10,7 @@ export class BaseSkill extends VBaseNode
     public owner:ChickFighter;
     public damage:number;
     hitProb:number;
+    doneStunDur:number;
     public attacked:boolean;
     public reserveTime:number;
     public prepareTime:number;
@@ -21,6 +22,7 @@ export class BaseSkill extends VBaseNode
         this.damage = 10;
         this.hitProb = 1.0;
         this.prepareDur = 0;
+        this.doneStunDur = 0;
         this.reset();
     }
 
@@ -29,7 +31,7 @@ export class BaseSkill extends VBaseNode
         this.reserveTime = 0;
         this.isDone = true;
         this.active = false;
-        this.prepareTime = 0;
+        this.prepareTime = this.prepareDur;
     }
 
     public setOwner(owner:ChickFighter)
@@ -45,13 +47,13 @@ export class BaseSkill extends VBaseNode
         this.active = true;
     }
 
-    public done(stunDur = 0.)
+    public done()
     {
         if (this.isDone) return;
         //cc.log('done ' + this.owner.name);
         this.owner.onSkillDone();
         // make sure owner back to stune state
-        this.owner.setStunFor(stunDur);
+        this.owner.setStunFor(this.doneStunDur);
         this.owner.reserveTime = this.reserveTime;
         this.isDone = true;
     }
@@ -80,6 +82,7 @@ export class KickSkill extends BaseSkill
     public skillVy:number;
     public hitPos:VVec2;
     public lastIsOnGround:boolean;
+    protected alwaysAttack:boolean;
 
     constructor()
     {
@@ -87,6 +90,8 @@ export class KickSkill extends BaseSkill
         this.hitPos = new VVec2();
         this.lastIsOnGround = true;
         this.damage = 25;
+        this.doneStunDur = 0.1;
+        this.alwaysAttack = false;
     }
 
     public setOwner(owner:ChickFighter)
@@ -107,10 +112,11 @@ export class KickSkill extends BaseSkill
     public start()
     {
         super.start();
+        this.alwaysAttack = this.owner.world.getRand() < 0.3;
         let owner = this.owner;
         let dis = Math.abs(this.owner.x - this.owner.enemy.x);
         this.skillVx = dis*(1.2 + this.owner.world.getRand()*0.8);
-        this.skillVy = 600 + this.owner.world.getRand()*300;
+        this.skillVy = 800 + this.owner.world.getRand()*300;
         owner.vx = owner.dir*this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
@@ -135,22 +141,52 @@ export class KickSkill extends BaseSkill
         return false;
     }
 
+    public checkWillAttack():boolean
+    {
+        if (this.alwaysAttack) return true;
+        let dis = Math.abs(this.owner.y - this.owner.enemy.y);
+        if (!this.owner.enemy.isOnGround)
+        {
+            return true;
+        }
+        return false;
+    }
+
     public update(dt:number)
     {
         super.update(dt);
         if (!this.active) return;
 
-        if (this.prepareTime < this.prepareDur)
+        if (this.prepareTime > 0)
         {
-            this.prepareTime += dt;
+            this.prepareTime -= dt;
+            if (this.prepareTime <= 0)
+            {
+                this.owner.setAnimState(WarriorAnimState.JUMP_HIGHT_BACKWARD);
+            }
             return;
         }
+
+        // update jump kick anim ---
+        if (this.checkWillAttack() && this.owner.vy > 0 && this.owner.vy < this.skillVy*0.95)
+        {
+            this.owner.setAnimState(WarriorAnimState.ATTACK_MIDDLE_1);
+        }
+        else if (this.owner.vy > 0 && this.owner.vy < this.skillVy*0.1)
+        {
+            this.owner.setAnimState(WarriorAnimState.JUMP_HIGHT_FORWARD);
+        }
+        else if (this.owner.vy < 0 && Math.abs(this.owner.vy) > this.skillVy*0.1)
+        {
+            this.owner.setAnimState(WarriorAnimState.LANDING);
+        }
+        // ------------------------
 
         let owner = this.owner;
         let enemy:ChickFighter = this.owner.enemy as any;
 
         // check for skill exercution -------
-        if (this.skillVy > 0 && this.owner.vy > 0 && this.owner.vy < this.skillVy*0.9)
+        if (this.checkWillAttack() && this.owner.vy > 0 && this.owner.vy < this.skillVy*0.9)
         {
             // check kick hit ---
             let p = owner.toGlobal(this.hitPos);
@@ -199,14 +235,16 @@ export class LowDodgeSkill extends BaseSkill
 
     public done()
     {
+        //cc.log('LowDodgeSkill done -----------');
         super.done();
+        this.owner.setAnimState(WarriorAnimState.FIGHTING_IDLE);
         // for scale down moving speed
         this.owner.moveVal = this.moveVal;
-        cc.log('LowDodgeSkill done');
     }
 
     public start()
     {
+        //cc.log('LowDodgeSkill start -----------------------------');
         super.start();
         this.startX = this.owner.x;
         this.prepareDur = this.owner.world.getRand()*0.2;
@@ -226,9 +264,10 @@ export class LowDodgeSkill extends BaseSkill
         super.update(dt);
         if (!this.active) return;
 
-        if (this.prepareTime < this.prepareDur)
+        if (this.prepareTime > 0)
         {
-            this.prepareTime += dt;
+            this.prepareTime -= dt;
+            if (this.prepareTime <= 0) this.owner.setAnimState(WarriorAnimState.RUN);
             return;
         }
 
@@ -237,5 +276,9 @@ export class LowDodgeSkill extends BaseSkill
         if (val > this.owner.moveSpeed) val = this.owner.moveSpeed;
         this.moveVal = this.owner.dir*val; // front
         this.owner.x += this.moveVal*dt*1.2;
+
+        // for spine timescale update on owner ---
+        this.owner.moveVal = this.moveVal;
+        // ------------
     }
 }

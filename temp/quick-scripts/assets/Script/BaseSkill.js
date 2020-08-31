@@ -17,6 +17,7 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
+var BaseWarrior_1 = require("./BaseWarrior");
 var VBaseNode_1 = require("./VBaseNode");
 var VBaseTransform_1 = require("./VBaseTransform");
 var BaseSkill = /** @class */ (function (_super) {
@@ -26,6 +27,7 @@ var BaseSkill = /** @class */ (function (_super) {
         _this.damage = 10;
         _this.hitProb = 1.0;
         _this.prepareDur = 0;
+        _this.doneStunDur = 0;
         _this.reset();
         return _this;
     }
@@ -33,7 +35,7 @@ var BaseSkill = /** @class */ (function (_super) {
         this.reserveTime = 0;
         this.isDone = true;
         this.active = false;
-        this.prepareTime = 0;
+        this.prepareTime = this.prepareDur;
     };
     BaseSkill.prototype.setOwner = function (owner) {
         this.owner = owner;
@@ -44,14 +46,13 @@ var BaseSkill = /** @class */ (function (_super) {
         this.isDone = false;
         this.active = true;
     };
-    BaseSkill.prototype.done = function (stunDur) {
-        if (stunDur === void 0) { stunDur = 0.; }
+    BaseSkill.prototype.done = function () {
         if (this.isDone)
             return;
         //cc.log('done ' + this.owner.name);
         this.owner.onSkillDone();
         // make sure owner back to stune state
-        this.owner.setStunFor(stunDur);
+        this.owner.setStunFor(this.doneStunDur);
         this.owner.reserveTime = this.reserveTime;
         this.isDone = true;
     };
@@ -77,6 +78,8 @@ var KickSkill = /** @class */ (function (_super) {
         _this.hitPos = new VBaseTransform_1.VVec2();
         _this.lastIsOnGround = true;
         _this.damage = 25;
+        _this.doneStunDur = 0.1;
+        _this.alwaysAttack = false;
         return _this;
     }
     KickSkill.prototype.setOwner = function (owner) {
@@ -92,10 +95,11 @@ var KickSkill = /** @class */ (function (_super) {
     };
     KickSkill.prototype.start = function () {
         _super.prototype.start.call(this);
+        this.alwaysAttack = this.owner.world.getRand() < 0.3;
         var owner = this.owner;
         var dis = Math.abs(this.owner.x - this.owner.enemy.x);
         this.skillVx = dis * (1.2 + this.owner.world.getRand() * 0.8);
-        this.skillVy = 600 + this.owner.world.getRand() * 300;
+        this.skillVy = 800 + this.owner.world.getRand() * 300;
         owner.vx = owner.dir * this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
@@ -113,18 +117,41 @@ var KickSkill = /** @class */ (function (_super) {
         this.lastIsOnGround = this.owner.getIsOnGround();
         return false;
     };
+    KickSkill.prototype.checkWillAttack = function () {
+        if (this.alwaysAttack)
+            return true;
+        var dis = Math.abs(this.owner.y - this.owner.enemy.y);
+        if (!this.owner.enemy.isOnGround) {
+            return true;
+        }
+        return false;
+    };
     KickSkill.prototype.update = function (dt) {
         _super.prototype.update.call(this, dt);
         if (!this.active)
             return;
-        if (this.prepareTime < this.prepareDur) {
-            this.prepareTime += dt;
+        if (this.prepareTime > 0) {
+            this.prepareTime -= dt;
+            if (this.prepareTime <= 0) {
+                this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.JUMP_HIGHT_BACKWARD);
+            }
             return;
         }
+        // update jump kick anim ---
+        if (this.checkWillAttack() && this.owner.vy > 0 && this.owner.vy < this.skillVy * 0.95) {
+            this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.ATTACK_MIDDLE_1);
+        }
+        else if (this.owner.vy > 0 && this.owner.vy < this.skillVy * 0.1) {
+            this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.JUMP_HIGHT_FORWARD);
+        }
+        else if (this.owner.vy < 0 && Math.abs(this.owner.vy) > this.skillVy * 0.1) {
+            this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.LANDING);
+        }
+        // ------------------------
         var owner = this.owner;
         var enemy = this.owner.enemy;
         // check for skill exercution -------
-        if (this.skillVy > 0 && this.owner.vy > 0 && this.owner.vy < this.skillVy * 0.9) {
+        if (this.checkWillAttack() && this.owner.vy > 0 && this.owner.vy < this.skillVy * 0.9) {
             // check kick hit ---
             var p = owner.toGlobal(this.hitPos);
             var v = new VBaseTransform_1.VVec2(p.x - enemy.x, p.y - enemy.y);
@@ -160,12 +187,14 @@ var LowDodgeSkill = /** @class */ (function (_super) {
         _super.prototype.setOwner.call(this, owner);
     };
     LowDodgeSkill.prototype.done = function () {
+        //cc.log('LowDodgeSkill done -----------');
         _super.prototype.done.call(this);
+        this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.FIGHTING_IDLE);
         // for scale down moving speed
         this.owner.moveVal = this.moveVal;
-        cc.log('LowDodgeSkill done');
     };
     LowDodgeSkill.prototype.start = function () {
+        //cc.log('LowDodgeSkill start -----------------------------');
         _super.prototype.start.call(this);
         this.startX = this.owner.x;
         this.prepareDur = this.owner.world.getRand() * 0.2;
@@ -180,8 +209,10 @@ var LowDodgeSkill = /** @class */ (function (_super) {
         _super.prototype.update.call(this, dt);
         if (!this.active)
             return;
-        if (this.prepareTime < this.prepareDur) {
-            this.prepareTime += dt;
+        if (this.prepareTime > 0) {
+            this.prepareTime -= dt;
+            if (this.prepareTime <= 0)
+                this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.RUN);
             return;
         }
         var val = Math.abs(this.moveVal);
@@ -190,6 +221,9 @@ var LowDodgeSkill = /** @class */ (function (_super) {
             val = this.owner.moveSpeed;
         this.moveVal = this.owner.dir * val; // front
         this.owner.x += this.moveVal * dt * 1.2;
+        // for spine timescale update on owner ---
+        this.owner.moveVal = this.moveVal;
+        // ------------
     };
     return LowDodgeSkill;
 }(BaseSkill));
