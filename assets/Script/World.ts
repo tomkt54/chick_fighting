@@ -40,6 +40,8 @@ export class World extends VBaseNode
         this.chick2.x = EnvSettings.SCREEN_W - this.chick1.x;
         this.chick2.dir = -1;
         this.chick2.scaleX = -1;
+        this.updateUIHpHdl(this.chick1);
+        this.updateUIHpHdl(this.chick2);
     }
 
     public startFighting()

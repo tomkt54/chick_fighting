@@ -79,22 +79,37 @@ export class BaseWarrior extends VBaseNode
     public totalHp:number;
 
     protected activeSkill:BaseSkill;
+    protected anim:any;
+    public animStateMap:any;
+    public animLoopMap:any;
+    public transDurMap:any;
+    protected curAnimState:number;
+    protected nextAnimState:number;
+    protected mixAnimTime:number;
 
     constructor(world:World) {
         super();
         this.skills = [];
         this.world = world;
         this.stateTransitionDurMap = {};
+        this.transDurMap = {};
         
+        this.mixAnimTime = 0;
         this.baseHeight = 60;
-        this.hitRadius = 50;
+        this.hitRadius = 40;
         this.moveSpeed = 400;
-        this.attackRange = 300;
+        this.attackRange = 350;
         this.minAttackRange = this.attackRange*0.6;
         
         this.ga = EnvSettings.ga*1.0;
         this.af = EnvSettings.af*1.0;
         this.totalHp = 100;
+        this.anim = null;
+        this.animStateMap = {};
+        this.animLoopMap = {};
+        this.curAnimState = -1;
+        this.nextAnimState = -1;
+        this.anim = null;
         this.reset();
     }
 
@@ -117,6 +132,11 @@ export class BaseWarrior extends VBaseNode
         this.hp = this.totalHp;
     }
 
+    public setAnim(anim:any)
+    {
+        this.anim = anim;
+    }
+
     public getHp()
     {
         return this.hp;
@@ -132,9 +152,17 @@ export class BaseWarrior extends VBaseNode
         return this.isOnGround;
     }
 
-    public setAnimState(animState:number, transDur:number = 0.1)
+    public setAnimState(animState:number)
     {
+        this.mixAnim(animState);
+    }
 
+    public playAnim(state:number)
+    {
+    }
+
+    public mixAnim(animState:number)
+    {
     }
 
     public update(dt:number) 
@@ -163,6 +191,7 @@ export class BaseWarrior extends VBaseNode
         switch(this.state)
         {
             case WarriorCommonState.IDLE:
+                this.setAnimState(WarriorAnimState.IDLE);
                 this.moveVal *= 0.8;
                 this.x += this.moveVal*dt;
                 break;

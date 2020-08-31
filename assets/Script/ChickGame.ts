@@ -25,14 +25,22 @@ export default class ChickGame extends cc.Component {
     @property(cc.ProgressBar)
     hpBar2: cc.ProgressBar = null;
 
+    @property(cc.Node)
+    anim1: cc.Node = null;
+
+    @property(cc.Node)
+    anim2: cc.Node = null;
+
     world:World;
 
     onLoad () {
         this.world = new World();
-        this.world.reset();
 
         // register ui hdl
         this.world.updateUIHpHdl = this.updateUIHpHdl.bind(this);
+        this.world.chick1.setAnim(this.anim1);
+        this.world.chick2.setAnim(this.anim2);
+        this.world.reset();
     }
 
     start () {
