@@ -99,7 +99,7 @@ var KickSkill = /** @class */ (function (_super) {
         var owner = this.owner;
         var dis = Math.abs(this.owner.x - this.owner.enemy.x);
         this.skillVx = dis * (1.2 + this.owner.world.getRand() * 0.8);
-        this.skillVy = 800 + this.owner.world.getRand() * 300;
+        this.skillVy = 850 + this.owner.world.getRand() * 300;
         owner.vx = owner.dir * this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
@@ -192,12 +192,14 @@ var LowDodgeSkill = /** @class */ (function (_super) {
         this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.FIGHTING_IDLE);
         // for scale down moving speed
         this.owner.moveVal = this.moveVal;
+        this.owner.targetScaleY = this.owner.defaultScaleY;
     };
     LowDodgeSkill.prototype.start = function () {
         //cc.log('LowDodgeSkill start -----------------------------');
         _super.prototype.start.call(this);
         this.startX = this.owner.x;
         this.prepareDur = this.owner.world.getRand() * 0.2;
+        this.owner.targetScaleY = this.owner.defaultScaleY * 0.8;
     };
     LowDodgeSkill.prototype.checkSkillDone = function () {
         if (Math.abs(this.owner.x - this.startX) > this.dodgeDis) {

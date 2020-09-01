@@ -15,6 +15,7 @@ export class World extends VBaseNode
 
     // ui handler --
     public updateUIHpHdl:any;
+    public onGameEndedHdl:any;
     // -----
 
     public baseTimeScale = 1.0;
@@ -32,6 +33,7 @@ export class World extends VBaseNode
         this.restInterval = 0;
         this.resting = false;
         this.updateUIHpHdl = null;
+        this.onGameEndedHdl = null;
     }
 
     public reset()
@@ -66,8 +68,8 @@ export class World extends VBaseNode
             this.restInterval -= dt;
         } 
         else {
-            this.resting = !this.resting;
-            this.restInterval = this.getRand()*5.0;
+            this.resting = this.getRand() > 0.4;
+            this.restInterval = this.getRand()*2.0;
         }
         let c1 = this.chick1;
         let c2 = this.chick2;
@@ -92,6 +94,7 @@ export class World extends VBaseNode
         let loser = this.chick1 == chick ? this.chick1:this.chick2;
 
         winer.win();
+        if (this.onGameEndedHdl) this.onGameEndedHdl();
     }
 
     public onWarriorHpChange(chick:BaseWarrior)

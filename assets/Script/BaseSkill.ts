@@ -116,7 +116,7 @@ export class KickSkill extends BaseSkill
         let owner = this.owner;
         let dis = Math.abs(this.owner.x - this.owner.enemy.x);
         this.skillVx = dis*(1.2 + this.owner.world.getRand()*0.8);
-        this.skillVy = 800 + this.owner.world.getRand()*300;
+        this.skillVy = 850 + this.owner.world.getRand()*300;
         owner.vx = owner.dir*this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
@@ -240,6 +240,7 @@ export class LowDodgeSkill extends BaseSkill
         this.owner.setAnimState(WarriorAnimState.FIGHTING_IDLE);
         // for scale down moving speed
         this.owner.moveVal = this.moveVal;
+        this.owner.targetScaleY = this.owner.defaultScaleY;
     }
 
     public start()
@@ -248,6 +249,7 @@ export class LowDodgeSkill extends BaseSkill
         super.start();
         this.startX = this.owner.x;
         this.prepareDur = this.owner.world.getRand()*0.2;
+        this.owner.targetScaleY = this.owner.defaultScaleY*0.8;
     }
 
     public checkSkillDone():boolean

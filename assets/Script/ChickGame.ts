@@ -7,6 +7,10 @@ const {ccclass, property} = cc._decorator;
 
 @ccclass
 export default class ChickGame extends cc.Component {
+
+    @property(cc.Label)
+    timeTf: cc.Label = null;
+
     @property(cc.Node)
     chick1: cc.Node = null;
 
@@ -32,6 +36,9 @@ export default class ChickGame extends cc.Component {
     anim2: cc.Node = null;
 
     world:World;
+    battleTime:number;
+
+    gameStarted:boolean;
 
     onLoad () {
         this.world = new World();
@@ -41,7 +48,8 @@ export default class ChickGame extends cc.Component {
         this.world.chick1.setAnim(this.anim1);
         this.world.chick2.setAnim(this.anim2);
         this.world.reset();
-
+        this.world.onGameEndedHdl = this.onGameEnded.bind(this);
+        
         let _deltaTime: number = 0;
         let timeScaleAttibute = cc.js.getPropertyDescriptor(cc.director, "_deltaTime");
 
@@ -67,11 +75,23 @@ export default class ChickGame extends cc.Component {
     {
         this.world.reset();
         this.world.startFighting();
+        this.gameStarted = true;
+        this.battleTime = 0;
+    }
+
+    public onGameEnded()
+    {
+        this.gameStarted = false;
     }
 
     update(dt) 
     {
         this.world.update(dt);
+        if (this.gameStarted)
+        {
+            this.battleTime += dt;
+            this.timeTf.string = Math.round(this.battleTime).toString();
+        }
         let wc1 = this.world.chick1;
         let wc2 = this.world.chick2;
         let c1 = this.chick1;

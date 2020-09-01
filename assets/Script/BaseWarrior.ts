@@ -16,6 +16,8 @@ export class WarriorCommonState
     public static ACTIVE:number = 1;
     public static STUN:number = 2;
     public static FIGHTING:number = 3;
+    public static DIE:number = 4;
+    public static WIN:number = 5;
 }
 
 export class WarriorFightingState
@@ -46,6 +48,8 @@ export class WarriorAnimState
     public static JUMP_HIGHT_FORWARD:number = 21;
     public static JUMP_HIGHT_BACKWARD:number = 22;
     public static ATTACK_MIDDLE_1:number = 23;
+    public static DIE:number = 24;
+    public static WIN:number = 25;
 }
 
 export class BaseWarrior extends VBaseNode
@@ -86,6 +90,14 @@ export class BaseWarrior extends VBaseNode
     protected curAnimState:number;
     protected mixAnimTime:number;
 
+    protected isDie:boolean;
+    protected isWin:boolean;
+    protected winTime:number;
+    protected winDur:number;
+
+    public targetScaleY:number;
+    public defaultScaleY:number;
+
     constructor(world:World) {
         super();
         this.skills = [];
@@ -98,6 +110,8 @@ export class BaseWarrior extends VBaseNode
         this.hitRadius = 40;
         this.moveSpeed = 600;
         this.attackRange = 300;
+        
+        this.winDur = 1.5;
         this.minAttackRange = this.attackRange*0.6;
         
         this.ga = EnvSettings.ga*1.0;
@@ -124,6 +138,10 @@ export class BaseWarrior extends VBaseNode
         this.stunWait = 0;
         this.moveVal = 0;
         this.reserveTime = 0;
+        this.winTime = 0;
+        this.isDie = false;
+        this.isWin = false;
+
         this.resetTransform();
         for (let i = 0; i < this.skills.length; i++) this.skills[i].reset();
 
@@ -133,6 +151,8 @@ export class BaseWarrior extends VBaseNode
     public setAnim(anim:any)
     {
         this.anim = anim;
+        this.defaultScaleY = this.anim.scaleY;
+        this.targetScaleY = this.anim.scaleY;
     }
 
     public getMoveVal():number
@@ -175,7 +195,7 @@ export class BaseWarrior extends VBaseNode
         if (this.y > 0) this.vy += this.ga*dt;
         this.y += this.vy*dt;
         this.isOnGround = false;
-
+        
         if (this.reserveTime > 0) this.reserveTime -= dt;
         if (this.y <= this.baseHeight)
         {
@@ -200,6 +220,25 @@ export class BaseWarrior extends VBaseNode
                 this.x += this.moveVal*dt;
                 break;
             case WarriorCommonState.STUN:
+                
+                if (this.isOnGround && this.isDie)
+                {
+                    this.setAnimState(WarriorAnimState.DIE);
+                    this.state = WarriorCommonState.DIE;
+                    break;
+                }
+                else if (this.isOnGround && this.isWin)
+                {
+                    this.setAnimState(WarriorAnimState.WIN);
+                    this.state = WarriorCommonState.WIN;
+                    this.winTime = this.winDur;
+                    break;
+                }
+                if (this.isOnGround)
+                {
+                    this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
+                }
+
                 if (this.stunTime < this.stunWait)
                 this.stunTime += dt;
                 else {
@@ -207,10 +246,16 @@ export class BaseWarrior extends VBaseNode
                 }
                 this.moveVal *= 0.8;
                 this.x += this.moveVal*dt;
+                
                 break;
             case WarriorCommonState.ACTIVE:
 
                 if (!this.isOnGround) break;
+                if (this.isDie || this.isWin) 
+                {
+                    this.state = WarriorCommonState.STUN;
+                    break;
+                }
                 if (this.moveVal == 0) this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
                 if (dis > this.attackRange || dis < this.minAttackRange) {
                     if (this.checkValidAttackDir())
@@ -252,8 +297,17 @@ export class BaseWarrior extends VBaseNode
                     }
                 }
                 break;
-            default:
+            case WarriorCommonState.FIGHTING:
                 this.updateFighting(dt);
+                break;
+            case WarriorCommonState.DIE:
+                break;
+            case WarriorCommonState.WIN:
+                this.winTime -= dt;
+                if (this.winTime <= 0)
+                {
+                    this.state = WarriorCommonState.IDLE;
+                }
                 break;
         }
         
@@ -305,12 +359,12 @@ export class BaseWarrior extends VBaseNode
     public die()
     {
         this.world.onWarriorDie(this);
-        this.setState(WarriorCommonState.IDLE);
+        this.isDie = true;
     }
 
     public win()
     {
-        this.setState(WarriorCommonState.IDLE);
+        this.isWin = true;
     }
 
     protected updateFighting(dt)
