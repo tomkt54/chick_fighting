@@ -234,6 +234,7 @@ export class BaseWarrior extends VBaseNode
                     this.winTime = this.winDur;
                     break;
                 }
+                
                 if (this.isOnGround)
                 {
                     this.setAnimState(WarriorAnimState.FIGHTING_IDLE);

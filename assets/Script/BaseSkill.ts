@@ -125,6 +125,12 @@ export class KickSkill extends BaseSkill
         // current -> crouch -> jumpHighBackWard -> attackMiddle1 -> jumpHighForward -> landing -> crouch
     }
 
+    public done()
+    {
+        super.done();
+        cc.log('kick done.');
+    }
+
     public calLandingDur():number
     {
         return 1.0;
@@ -155,6 +161,15 @@ export class KickSkill extends BaseSkill
     public update(dt:number)
     {
         super.update(dt);
+
+        if (this.owner.vy < 0)
+        {
+            if (Math.abs(this.owner.vy) > this.skillVy*0.1)
+            {
+                this.owner.setAnimState(WarriorAnimState.LANDING);
+            }
+        }
+        
         if (!this.active) return;
 
         if (this.prepareTime > 0)
@@ -168,18 +183,21 @@ export class KickSkill extends BaseSkill
         }
 
         // update jump kick anim ---
-        if (this.checkWillAttack() && this.owner.vy > 0 && this.owner.vy < this.skillVy*0.95)
+        if (this.owner.vy > 0)
         {
-            this.owner.setAnimState(WarriorAnimState.ATTACK_MIDDLE_1);
+            if (this.owner.vy < this.skillVy*0.1)
+            {
+                this.owner.setAnimState(WarriorAnimState.JUMP_HIGHT_FORWARD);
+            }
+            else if (this.owner.vy < this.skillVy*0.95)
+            {
+                if (this.checkWillAttack())
+                {
+                    this.owner.setAnimState(WarriorAnimState.ATTACK_MIDDLE_1);
+                }
+            }
         }
-        else if (this.owner.vy > 0 && this.owner.vy < this.skillVy*0.1)
-        {
-            this.owner.setAnimState(WarriorAnimState.JUMP_HIGHT_FORWARD);
-        }
-        else if (this.owner.vy < 0 && Math.abs(this.owner.vy) > this.skillVy*0.1)
-        {
-            this.owner.setAnimState(WarriorAnimState.LANDING);
-        }
+        
         // ------------------------
 
         let owner = this.owner;

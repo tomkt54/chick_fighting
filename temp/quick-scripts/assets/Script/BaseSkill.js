@@ -106,6 +106,10 @@ var KickSkill = /** @class */ (function (_super) {
         // play anim sequence ---
         // current -> crouch -> jumpHighBackWard -> attackMiddle1 -> jumpHighForward -> landing -> crouch
     };
+    KickSkill.prototype.done = function () {
+        _super.prototype.done.call(this);
+        cc.log('kick done.');
+    };
     KickSkill.prototype.calLandingDur = function () {
         return 1.0;
     };
@@ -128,6 +132,11 @@ var KickSkill = /** @class */ (function (_super) {
     };
     KickSkill.prototype.update = function (dt) {
         _super.prototype.update.call(this, dt);
+        if (this.owner.vy < 0) {
+            if (Math.abs(this.owner.vy) > this.skillVy * 0.1) {
+                this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.LANDING);
+            }
+        }
         if (!this.active)
             return;
         if (this.prepareTime > 0) {
@@ -138,14 +147,15 @@ var KickSkill = /** @class */ (function (_super) {
             return;
         }
         // update jump kick anim ---
-        if (this.checkWillAttack() && this.owner.vy > 0 && this.owner.vy < this.skillVy * 0.95) {
-            this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.ATTACK_MIDDLE_1);
-        }
-        else if (this.owner.vy > 0 && this.owner.vy < this.skillVy * 0.1) {
-            this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.JUMP_HIGHT_FORWARD);
-        }
-        else if (this.owner.vy < 0 && Math.abs(this.owner.vy) > this.skillVy * 0.1) {
-            this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.LANDING);
+        if (this.owner.vy > 0) {
+            if (this.owner.vy < this.skillVy * 0.1) {
+                this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.JUMP_HIGHT_FORWARD);
+            }
+            else if (this.owner.vy < this.skillVy * 0.95) {
+                if (this.checkWillAttack()) {
+                    this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.ATTACK_MIDDLE_1);
+                }
+            }
         }
         // ------------------------
         var owner = this.owner;
