@@ -103,9 +103,24 @@ export class ChickFighter extends BaseWarrior
         let enemy = this.enemy;
         let world = this.world;
         let used = false;
+        
+        let kickProb = 0.05;
+        if (enemy.vy > 0 && enemy.y > enemy.baseHeight && enemy.y < enemy.baseHeight*1.4)
+        {
+            kickProb = 0.15;
+        }
+        // kick
+        if (!used)
+        {
+            if (world.getRand() < kickProb)
+            {
+                used = true;
+                this.useSkill(ChickFighter.SKILL_KICK);
+            }
+        }
 
         // dodge
-        if (!used && enemy.y > enemy.baseHeight*1.1)
+        if (!used && enemy.vy > 0 && enemy.y > enemy.baseHeight*1.1)
         {
             
             let dodgeSkill:LowDodgeSkill = this.skills[ChickFighter.LOW_DODGE] as any;
@@ -120,16 +135,6 @@ export class ChickFighter extends BaseWarrior
                 used = true;
                 dodgeSkill.dodgeDis = 300;
                 this.useSkill(ChickFighter.LOW_DODGE);
-            }
-        }
-
-        // kick
-        if (!used && enemy.getIsOnGround())
-        {
-            if (world.getRand() < 0.3)
-            {
-                used = true;
-                this.useSkill(ChickFighter.SKILL_KICK);
             }
         }
         

@@ -116,7 +116,7 @@ export class KickSkill extends BaseSkill
         let owner = this.owner;
         let dis = Math.abs(this.owner.x - this.owner.enemy.x);
         this.skillVx = dis*(1.2 + this.owner.world.getRand()*0.8);
-        this.skillVy = 850 + this.owner.world.getRand()*300;
+        this.skillVy = 820 + this.owner.world.getRand()*200;
         owner.vx = owner.dir*this.skillVx;
         owner.vy = this.skillVy;
         this.lastIsOnGround = true;
