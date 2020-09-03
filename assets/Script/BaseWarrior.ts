@@ -18,6 +18,7 @@ export class WarriorCommonState
     public static FIGHTING:number = 3;
     public static DIE:number = 4;
     public static WIN:number = 5;
+    public static STUN_DOWN:number = 6;
 }
 
 export class WarriorFightingState
@@ -42,6 +43,7 @@ export class WarriorAnimState
     public static BACKWARD:number = 7;
     public static CHANGE_DIR:number = 8;
     public static FIGHTING_IDLE:number = 9;
+    public static DOWN:number = 10;
 
     // chick
     public static CROUCH:number = 20;
@@ -73,6 +75,7 @@ export class BaseWarrior extends VBaseNode
 
     enemy: BaseWarrior;
     isOnGround:boolean;
+    lastIsOnGround:boolean;
     state:number;
     world:World;
     
@@ -98,6 +101,8 @@ export class BaseWarrior extends VBaseNode
     public targetScaleY:number;
     public defaultScaleY:number;
 
+    public stunDownTime:number;
+
     constructor(world:World) {
         super();
         this.skills = [];
@@ -109,6 +114,7 @@ export class BaseWarrior extends VBaseNode
         this.baseHeight = 60;
         this.hitRadius = 40;
         this.moveSpeed = 600;
+        this.attackRange = 300;
         this.attackRange = 300;
         
         this.winDur = 1.5;
@@ -132,9 +138,11 @@ export class BaseWarrior extends VBaseNode
         this.enemy = null;
         this.activeSkill = null;
         this.state = WarriorCommonState.IDLE;
-        this.isOnGround = false;
+        this.isOnGround = true;
+        this.lastIsOnGround = true;
         this.dir = 1;
         this.stunTime = 0;
+        this.stunDownTime = 0;
         this.stunWait = 0;
         this.moveVal = 0;
         this.reserveTime = 0;
@@ -207,6 +215,8 @@ export class BaseWarrior extends VBaseNode
         {
             this.x += this.vx*dt;
             this.vx += this.af*dt;
+
+            this.lastIsOnGround = false;
         }
 
         if (!this.enemy) this.findEnemy();
@@ -219,8 +229,27 @@ export class BaseWarrior extends VBaseNode
                 this.moveVal *= 0.8;
                 this.x += this.moveVal*dt;
                 break;
+            case WarriorCommonState.STUN_DOWN:
+                //this.setAnimState(WarriorAnimState.DOWN);
+                this.targetScaleY = this.defaultScaleY*0.4;
+                if (this.stunDownTime > 0)
+                {
+                    this.stunDownTime -= dt;
+                    if (this.stunDownTime <= 0)
+                    {
+                        this.state = WarriorCommonState.STUN;
+                    }    
+                }
+                break;
             case WarriorCommonState.STUN:
-                
+                if (!this.lastIsOnGround && this.isOnGround)
+                {
+                    this.state = WarriorCommonState.STUN_DOWN;
+                    this.stunDownTime = 0.05;
+                    this.lastIsOnGround = true;
+                }
+
+                this.targetScaleY = this.defaultScaleY*1.0;
                 if (this.isOnGround && this.isDie)
                 {
                     this.setAnimState(WarriorAnimState.DIE);
@@ -234,14 +263,12 @@ export class BaseWarrior extends VBaseNode
                     this.winTime = this.winDur;
                     break;
                 }
-                
+
                 if (this.isOnGround)
-                {
                     this.setAnimState(WarriorAnimState.FIGHTING_IDLE);
-                }
 
                 if (this.stunTime < this.stunWait)
-                this.stunTime += dt;
+                    this.stunTime += dt;
                 else {
                     this.state = WarriorCommonState.ACTIVE;
                 }
