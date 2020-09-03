@@ -232,7 +232,7 @@ var LowDodgeSkill = /** @class */ (function (_super) {
         if (val > this.owner.moveSpeed)
             val = this.owner.moveSpeed;
         this.moveVal = this.owner.dir * val; // front
-        this.owner.x += this.moveVal * dt * 1.2;
+        this.owner.x += this.moveVal * dt * 1.5;
         // for spine timescale update on owner ---
         this.owner.moveVal = this.moveVal;
         // ------------
