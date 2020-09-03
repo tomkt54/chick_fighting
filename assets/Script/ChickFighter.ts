@@ -66,6 +66,10 @@ export class ChickFighter extends BaseWarrior
 
         this.transDurMap[WarriorAnimState.LANDING + '__' + WarriorAnimState.DOWN] = 0;
         this.transDurMap[WarriorAnimState.FALLING + '__' + WarriorAnimState.DOWN] = 0;
+
+        this.transDurMap[WarriorAnimState.JUMP_HIGHT_FORWARD + '__' + WarriorAnimState.LANDING] = 0.15;
+        this.transDurMap[WarriorAnimState.ATTACK_MIDDLE_1 + '__' + WarriorAnimState.LANDING] = 0.15;
+
         this.transDurMap[WarriorAnimState.DOWN + '__' + WarriorAnimState.FIGHTING_IDLE] = 0.1;
 
         this.transDurMap[WarriorAnimState.JUMP_HIGHT_BACKWARD + '__' + WarriorAnimState.ATTACK_MIDDLE_1] = 0.05;
