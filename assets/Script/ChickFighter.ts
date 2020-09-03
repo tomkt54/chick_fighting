@@ -107,7 +107,7 @@ export class ChickFighter extends BaseWarrior
         let kickProb = 0.05;
         if (enemy.vy > 0 && enemy.y > enemy.baseHeight && enemy.y < enemy.baseHeight*1.4)
         {
-            kickProb = 0.15;
+            kickProb = 0.2;
         }
         // kick
         if (!used)
