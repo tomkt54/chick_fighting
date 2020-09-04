@@ -137,8 +137,6 @@ var KickSkill = /** @class */ (function (_super) {
                 this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.LANDING);
             }
         }
-        if (!this.active)
-            return;
         if (this.prepareTime > 0) {
             this.prepareTime -= dt;
             if (this.prepareTime <= 0) {
@@ -151,12 +149,14 @@ var KickSkill = /** @class */ (function (_super) {
             if (this.owner.vy < this.skillVy * 0.1) {
                 this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.JUMP_HIGHT_FORWARD);
             }
-            else if (this.owner.vy < this.skillVy * 0.95) {
+            else if (this.active && this.owner.vy < this.skillVy * 0.95) {
                 if (this.checkWillAttack()) {
                     this.owner.setAnimState(BaseWarrior_1.WarriorAnimState.ATTACK_MIDDLE_1);
                 }
             }
         }
+        if (!this.active)
+            return;
         // ------------------------
         var owner = this.owner;
         var enemy = this.owner.enemy;

@@ -44,6 +44,7 @@ export class WarriorAnimState
     public static CHANGE_DIR:number = 8;
     public static FIGHTING_IDLE:number = 9;
     public static DOWN:number = 10;
+    public static DODGE_GROUND:number = 11;
 
     // chick
     public static CROUCH:number = 20;

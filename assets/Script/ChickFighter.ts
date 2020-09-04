@@ -56,6 +56,9 @@ export class ChickFighter extends BaseWarrior
         this.animStateMap[WarriorAnimState.DOWN] = 'Crouch';
         this.animLoopMap[WarriorAnimState.DOWN] = false;
 
+        this.animStateMap[WarriorAnimState.DODGE_GROUND] = 'DodgeGround';
+        this.animLoopMap[WarriorAnimState.DODGE_GROUND] = true;
+
         this.transDurMap[WarriorAnimState.IDLE + '__' + WarriorAnimState.RUN] = 0.03;
         this.transDurMap[WarriorAnimState.FIGHTING_IDLE + '__' + WarriorAnimState.RUN] = 0.03;
         this.transDurMap[WarriorAnimState.RUN + '__' + WarriorAnimState.FIGHTING_IDLE] = 0.1;

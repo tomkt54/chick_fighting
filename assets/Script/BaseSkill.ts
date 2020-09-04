@@ -169,9 +169,8 @@ export class KickSkill extends BaseSkill
                 this.owner.setAnimState(WarriorAnimState.LANDING);
             }
         }
-        
-        if (!this.active) return;
 
+        
         if (this.prepareTime > 0)
         {
             this.prepareTime -= dt;
@@ -189,7 +188,7 @@ export class KickSkill extends BaseSkill
             {
                 this.owner.setAnimState(WarriorAnimState.JUMP_HIGHT_FORWARD);
             }
-            else if (this.owner.vy < this.skillVy*0.95)
+            else if (this.active && this.owner.vy < this.skillVy*0.95)
             {
                 if (this.checkWillAttack())
                 {
@@ -197,6 +196,8 @@ export class KickSkill extends BaseSkill
                 }
             }
         }
+
+        if (!this.active) return;
         
         // ------------------------
 
@@ -290,7 +291,6 @@ export class LowDodgeSkill extends BaseSkill
             if (this.prepareTime <= 0) this.owner.setAnimState(WarriorAnimState.RUN);
             return;
         }
-
         let val = Math.abs(this.moveVal);
         val += this.owner.moveSpeed*0.05;
         if (val > this.owner.moveSpeed) val = this.owner.moveSpeed;
