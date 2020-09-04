@@ -64,11 +64,11 @@ export class ChickFighter extends BaseWarrior
         this.transDurMap[WarriorAnimState.LANDING + '__' + WarriorAnimState.FIGHTING_IDLE] = 0;
         this.transDurMap[WarriorAnimState.FALLING + '__' + WarriorAnimState.FIGHTING_IDLE] = 0;
 
-        this.transDurMap[WarriorAnimState.LANDING + '__' + WarriorAnimState.DOWN] = 0;
-        this.transDurMap[WarriorAnimState.FALLING + '__' + WarriorAnimState.DOWN] = 0;
+        this.transDurMap[WarriorAnimState.LANDING + '__' + WarriorAnimState.DOWN] = 0.05;
+        this.transDurMap[WarriorAnimState.FALLING + '__' + WarriorAnimState.DOWN] = 0.05;
 
-        this.transDurMap[WarriorAnimState.JUMP_HIGHT_FORWARD + '__' + WarriorAnimState.LANDING] = 0.15;
-        this.transDurMap[WarriorAnimState.ATTACK_MIDDLE_1 + '__' + WarriorAnimState.LANDING] = 0.15;
+        this.transDurMap[WarriorAnimState.JUMP_HIGHT_FORWARD + '__' + WarriorAnimState.LANDING] = 0.3;
+        this.transDurMap[WarriorAnimState.ATTACK_MIDDLE_1 + '__' + WarriorAnimState.LANDING] = 0.3;
 
         this.transDurMap[WarriorAnimState.DOWN + '__' + WarriorAnimState.FIGHTING_IDLE] = 0.1;
 
@@ -107,7 +107,7 @@ export class ChickFighter extends BaseWarrior
         let kickProb = 0.05;
         if (enemy.vy > 0 && enemy.y > enemy.baseHeight && enemy.y < enemy.baseHeight*1.4)
         {
-            kickProb = 0.2;
+            kickProb = 0.3;
         }
         // kick
         if (!used)

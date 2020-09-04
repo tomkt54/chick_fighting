@@ -230,8 +230,8 @@ export class BaseWarrior extends VBaseNode
                 this.x += this.moveVal*dt;
                 break;
             case WarriorCommonState.STUN_DOWN:
-                //this.setAnimState(WarriorAnimState.DOWN);
-                this.targetScaleY = this.defaultScaleY*0.4;
+                this.setAnimState(WarriorAnimState.DOWN);
+                this.targetScaleY = this.defaultScaleY*0.6;
                 if (this.stunDownTime > 0)
                 {
                     this.stunDownTime -= dt;
