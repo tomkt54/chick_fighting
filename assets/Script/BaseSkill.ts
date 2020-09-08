@@ -214,7 +214,7 @@ export class KickSkill extends BaseSkill
             if (dis < enemy.hitRadius)
             {
                 //cc.log('kick skill exercuted ---'  + this.owner.name);
-                enemy.vy -= 30;
+                enemy.vy -= 20 + this.owner.world.getRand()*10;
                 // wait for landing
                 let critical = this.owner.world.getRand()*this.damage*0.3;
                 enemy.hurt(this.damage + critical, 1.0);

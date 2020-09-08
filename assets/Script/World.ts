@@ -79,10 +79,10 @@ export class World extends VBaseNode
         {
             if ((c1.x - c2.x)*c2.vx > 0 && (c2.x - c1.x)*c1.vx > 0)
             {
-                if (dis < c1.hitRadius + c2.hitRadius)
+                if (dis < (c1.hitRadius + c2.hitRadius)*0.5)
                 {
-                    c1.vx = - c1.vx*0.9;
-                    c2.vx = - c2.vx*0.9;
+                    c1.vx = - c1.vx*0.6;
+                    c2.vx = - c2.vx*0.6;
                 } 
             }
         }
